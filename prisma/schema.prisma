@@ -1,0 +1,534 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SUB_ADMIN
+  MANAGER
+  BRANCH_MANAGER
+  CASHIER
+  CALL_CENTER
+}
+
+enum BranchType {
+  WAREHOUSE
+  OUTLET
+}
+
+enum BusinessType {
+  FOOD
+  RETAIL
+  GENERAL
+}
+
+enum SizeType {
+  SELLING
+  INVENTORY
+}
+
+enum OrderMode {
+  DINE_IN
+  DELIVERY
+  TAKE_AWAY
+  OTHERS
+}
+
+enum OrderType {
+  POS
+  FOODPANDA
+  GOLOOTLO
+  CHEETAY
+  SUPERMEAN
+  EATOYE
+  FOOD_GENIES
+  ZAPP
+  HI_FOOD
+  TOSSDOWN
+  WEB_ORDER
+  CALL_CENTER
+  CAREEM
+  UBER
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PROCESSING
+  READY
+  DELIVERED
+  COMPLETED
+  REJECTED
+}
+
+enum PaymentType {
+  CASH
+  CARD
+  DEBT
+  CREDIT
+  ONLINE
+  CHEQUE
+  OTHERS
+}
+
+enum AddressType {
+  HOME
+  OFFICE
+  WORK
+  FRIEND
+  OTHERS
+}
+
+enum NotificationType {
+  ORDER
+  PAYMENT
+  SUMMARY
+}
+
+enum CompanySetttings {
+  ALLOW_POS
+  ALLOW_KDS
+  ALLOW_MULTI_PRINTING
+  NUMBER_OF_USERS
+  ALLOW_DYNAMIC_RECEIPT
+  ALLOW_INVENTORY
+  ALLOW_FINANCE
+  ADVANCE_REPORTING
+  NUMBER_OF_ACTIVE_USERS
+}
+
+enum NotificationSettings {
+  IS_STICKY
+  DIRECT_LINK
+}
+
+// MODELS =================================================
+
+model city {
+  cityId   Int     @id @default(autoincrement())
+  cityName String
+  users    users[]
+}
+
+model company {
+  companyId       Int               @id @default(autoincrement())
+  companyName     String
+  email           String
+  address         String?
+  website         String?
+  phone           String?
+  businessType    BusinessType      @default(FOOD)
+  isActive        Boolean?          @default(true)
+  createdAt       DateTime?         @default(now())
+  createdBy       BigInt?
+  updatedAt       DateTime?         @updatedAt
+  updatedBy       BigInt?
+  isDeleted       Boolean?          @default(false)
+  users           users[]
+  branch          branch[]
+  size            size[]
+  flavour         flavour[]
+  productCategory productCategory[]
+  ProductType     productType[]
+  products        products[]
+  unitConversion  unitConversion[]
+  Areas           areas[]
+  paymentMode     paymentMode[]
+  customer        customer[]
+  tables          tables[]
+  waiters         waiters[]
+  Order           order[]
+  orderDetail     orderDetail[]
+  notifications   notifications[]
+  companySettings companySettings[]
+  loginLogs       loginLogs[]
+  orderPayments   orderPayments[]
+}
+
+model companySettings {
+  companySettingId Int              @id @default(autoincrement())
+  setting          CompanySetttings @default(NUMBER_OF_USERS)
+  value            String           @default("") @db.Text
+  companyId        Int
+  company          company          @relation(fields: [companyId], references: [companyId])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime?        @updatedAt
+}
+
+model users {
+  userId               Int                    @id @default(autoincrement())
+  fullname             String
+  email                String                 @unique
+  password             String
+  role                 UserRole               @default(MANAGER)
+  isEmailVerified      Boolean?               @default(false)
+  isApproved           Boolean?               @default(true)
+  notification         Boolean                @default(true)
+  cityId               Int?
+  city                 city?                  @relation(fields: [cityId], references: [cityId])
+  companyId            Int?
+  company              company?               @relation(fields: [companyId], references: [companyId])
+  isActive             Boolean?               @default(true)
+  createdAt            DateTime?              @default(now())
+  createdBy            BigInt?
+  updatedAt            DateTime?              @updatedAt
+  updatedBy            BigInt?
+  isDeleted            Boolean?               @default(false)
+  branch               branch[]
+  otp                  otp[]
+  devices              devices[]
+  notifications        notifications[]
+  loginLogs            loginLogs[]
+  notificationSettings notificationSettings[]
+}
+
+model loginLogs {
+  loginLogsId  String   @id @default(uuid())
+  accessToken  String
+  refreshToken String
+  companyId    Int
+  company      company  @relation(fields: [companyId], references: [companyId])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       Int
+  user         users    @relation(fields: [userId], references: [userId])
+}
+
+model devices {
+  deviceId  String    @id @default(uuid())
+  device    String    @unique
+  userId    Int
+  user      users     @relation(fields: [userId], references: [userId])
+  createdOn DateTime? @default(now())
+  updatedOn DateTime? @default(now())
+}
+
+model notifications {
+  notificationId String           @id @default(uuid())
+  userId         Int
+  user           users            @relation(fields: [userId], references: [userId])
+  isRead         Boolean          @default(false)
+  type           NotificationType
+  createdOn      DateTime?        @default(now())
+  updatedOn      DateTime?        @default(now())
+  companyId      Int
+  company        company          @relation(fields: [companyId], references: [companyId])
+}
+
+model notificationSettings {
+  notificationSettingId String               @id @default(uuid())
+  setting               NotificationSettings
+  value                 String               @db.Text
+  userId                Int
+  user                  users                @relation(fields: [userId], references: [userId])
+}
+
+model otp {
+  otpId      Int      @id @default(autoincrement())
+  userId     Int
+  user       users    @relation(fields: [userId], references: [userId])
+  otp        String
+  expiryTime DateTime
+  createdAt  DateTime @default(now())
+}
+
+model branch {
+  branchId    Int        @id @default(autoincrement())
+  branchName  String
+  description String?    @db.VarChar(200)
+  type        BranchType @default(OUTLET)
+  address     String?
+  longitude   Decimal?
+  latitude    Decimal?
+  startTime   String?
+  endTime     String?
+  isActive    Boolean?   @default(true)
+  createdAt   DateTime?  @default(now())
+  createdBy   BigInt?
+  updatedAt   DateTime?  @updatedAt
+  updatedBy   BigInt?
+  isDeleted   Boolean?   @default(false)
+  companyId   Int
+  company     company    @relation(fields: [companyId], references: [companyId])
+  user        users[]
+  areas       areas[]
+  products    products[]
+  order       order[]
+}
+
+model size {
+  sizeId                     Int              @id @default(autoincrement())
+  sizeName                   String
+  product                    products[]
+  type                       SizeType         @default(SELLING)
+  companyId                  Int
+  company                    company          @relation(fields: [companyId], references: [companyId])
+  buyingUnitConversion       unitConversion[] @relation("buyingUnit")
+  distributionUnitConversion unitConversion[] @relation("distributionUnit")
+  sellingUnitConversion      unitConversion[] @relation("sellingUnit")
+}
+
+model flavour {
+  flevourId   Int        @id @default(autoincrement())
+  flavourName String
+  product     products[]
+  companyId   Int
+  company     company    @relation(fields: [companyId], references: [companyId])
+}
+
+model unitConversion {
+  unitConversionId   Int        @id @default(autoincrement())
+  buyingUnitId       Int
+  buyingUnit         size       @relation("buyingUnit", fields: [buyingUnitId], references: [sizeId])
+  distributionUnitId Int
+  distributionUnit   size       @relation("distributionUnit", fields: [distributionUnitId], references: [sizeId])
+  sellingUnitId      Int
+  sellingUnit        size       @relation("sellingUnit", fields: [sellingUnitId], references: [sizeId])
+  companyId          Int
+  company            company    @relation(fields: [companyId], references: [companyId])
+  product            products[]
+}
+
+model productCategory {
+  productCategoryId Int        @id @default(autoincrement())
+  categoryName      String
+  description       String?
+  code              String?
+  color             String?
+  printerName       String?
+  image             String?
+  image2            String?
+  isActive          Boolean?   @default(true)
+  createdAt         DateTime?  @default(now())
+  createdBy         BigInt?
+  updatedAt         DateTime?  @updatedAt
+  updatedBy         BigInt?
+  isDeleted         Boolean?   @default(false)
+  companyId         Int
+  company           company    @relation(fields: [companyId], references: [companyId])
+  product           products[]
+}
+
+model productType {
+  productTypeId Int        @id @default(autoincrement())
+  typeName      String
+  description   String?
+  printerName   String?
+  color         String?
+  image         String?
+  isActive      Boolean?   @default(true)
+  createdAt     DateTime?  @default(now())
+  createdBy     BigInt?
+  updatedAt     DateTime?  @updatedAt
+  updatedBy     BigInt?
+  isDeleted     Boolean?   @default(false)
+  companyId     Int
+  company       company    @relation(fields: [companyId], references: [companyId])
+  products      products[]
+}
+
+model products {
+  productId         Int             @id @default(autoincrement())
+  productName       String
+  descriptions      String?
+  allowDiscount     Boolean         @default(true)
+  isSaleable        Boolean         @default(true)
+  isInventory       Boolean         @default(false)
+  sellingPrice      Decimal         @db.Money
+  servingQuantity   Decimal?        @db.Decimal()
+  isDeal            Boolean         @default(false)
+  isHalfNhalf       Boolean         @default(false)
+  halfNhalfPcs      Int?
+  image             String?
+  image2            String?
+  unitConversionId  Int
+  unitConversion    unitConversion  @relation(fields: [unitConversionId], references: [unitConversionId])
+  productCategoryId Int
+  productCategory   productCategory @relation(fields: [productCategoryId], references: [productCategoryId])
+  productTypeId     Int
+  productType       productType     @relation(fields: [productTypeId], references: [productTypeId])
+  flavourId         Int
+  flavour           flavour         @relation(fields: [flavourId], references: [flevourId])
+  sizeId            Int
+  size              size            @relation(fields: [sizeId], references: [sizeId])
+  isActive          Boolean?        @default(true)
+  createdAt         DateTime?       @default(now())
+  createdBy         BigInt?
+  updatedAt         DateTime?       @updatedAt
+  updatedBy         BigInt?
+  isDeleted         Boolean?        @default(false)
+  companyId         Int
+  company           company         @relation(fields: [companyId], references: [companyId])
+  branch            branch[]
+  parentOrderDetail orderDetail[]   @relation("parentProduct")
+  orderDetail       orderDetail[]   @relation("product")
+}
+
+model areas {
+  areaId          Int       @id @default(autoincrement())
+  areaName        String
+  startTime       DateTime?
+  endTime         DateTime?
+  deliveryTime    String?
+  deliveryCharges Decimal?  @db.Money
+  isActive        Boolean?  @default(true)
+  createdAt       DateTime? @default(now())
+  createdBy       BigInt?
+  updatedAt       DateTime? @updatedAt
+  updatedBy       BigInt?
+  isDeleted       Boolean?  @default(false)
+  companyId       Int
+  company         company   @relation(fields: [companyId], references: [companyId])
+  branch          branch[]
+}
+
+model paymentMode {
+  paymentModeId   Int             @id @default(autoincrement())
+  paymentModeName String
+  PaymentType     PaymentType     @default(CASH)
+  isActive        Boolean?        @default(true)
+  createdAt       DateTime?       @default(now())
+  createdBy       BigInt?
+  updatedAt       DateTime?       @updatedAt
+  updatedBy       BigInt?
+  isDeleted       Boolean?        @default(false)
+  companyId       Int
+  company         company         @relation(fields: [companyId], references: [companyId])
+  orderPayments   orderPayments[]
+}
+
+model tables {
+  tableId   Int       @id @default(autoincrement())
+  tableName String
+  isActive  Boolean?  @default(true)
+  createdAt DateTime? @default(now())
+  createdBy BigInt?
+  updatedAt DateTime? @updatedAt
+  updatedBy BigInt?
+  isDeleted Boolean?  @default(false)
+  companyId Int
+  company   company   @relation(fields: [companyId], references: [companyId])
+  waiter    waiters[]
+}
+
+model waiters {
+  waiterId   Int       @id @default(autoincrement())
+  waiterName String
+  cnic       String?
+  phone      String?
+  isActive   Boolean?  @default(true)
+  createdAt  DateTime? @default(now())
+  createdBy  BigInt?
+  updatedAt  DateTime? @updatedAt
+  updatedBy  BigInt?
+  isDeleted  Boolean?  @default(false)
+  companyId  Int
+  company    company   @relation(fields: [companyId], references: [companyId])
+  table      tables[]
+}
+
+model customerName {
+  customerNameId Int      @id @default(autoincrement())
+  name           String
+  isActive       Boolean? @default(true)
+  customerId     Int
+  customer       customer @relation(fields: [customerId], references: [customerId])
+}
+
+model customerAddress {
+  customerAddressId Int         @id @default(autoincrement())
+  address           String
+  customerId        Int
+  type              AddressType @default(HOME)
+  isActive          Boolean?    @default(true)
+  customer          customer    @relation(fields: [customerId], references: [customerId])
+}
+
+model customer {
+  customerId      Int               @id @default(autoincrement())
+  customerName    String
+  cnic            String?
+  phone           String?
+  email           String?
+  rewards         Decimal?          @db.Money
+  customer        customerName[]
+  customerAddress customerAddress[]
+  isActive        Boolean?          @default(true)
+  createdAt       DateTime?         @default(now())
+  createdBy       BigInt?
+  updatedAt       DateTime?         @updatedAt
+  updatedBy       BigInt?
+  isDeleted       Boolean?          @default(false)
+  companyId       Int
+  company         company           @relation(fields: [companyId], references: [companyId])
+}
+
+model order {
+  orderId        String          @id @default(uuid())
+  orderDate      DateTime
+  mode           OrderMode       @default(DINE_IN)
+  status         OrderStatus     @default(PENDING)
+  type           OrderType       @default(POS)
+  isAdvanceOrder Boolean         @default(false)
+  orderProgress  Int?
+  amount         Decimal         @db.Money
+  gst            Float?
+  gstAmount      Decimal         @default(0) @db.Money
+  vat            Float?
+  vatAmount      Decimal         @default(0) @db.Money
+  discount       Float?
+  discountAmount Decimal         @default(0) @db.Money
+  totalAmount    Decimal         @db.Money
+  paidAmount     Decimal         @db.Money
+  completedAt    DateTime?
+  createdAt      DateTime?       @default(now())
+  createdBy      BigInt?
+  updatedAt      DateTime?       @updatedAt
+  updatedBy      BigInt?
+  branchId       Int
+  branch         branch          @relation(fields: [branchId], references: [branchId])
+  companyId      Int
+  company        company         @relation(fields: [companyId], references: [companyId])
+  orderDetail    orderDetail[]
+  orderPayments  orderPayments[]
+}
+
+model orderDetail {
+  orderDetailId     String    @id @default(uuid())
+  quantity          Float
+  price             Float
+  isDeal            Boolean
+  isHalfNhalf       Boolean
+  halfNhalfQuantity Int?
+  parentProductId   Int?
+  parentProduct     products? @relation("parentProduct", fields: [parentProductId], references: [productId])
+  productId         Int
+  product           products  @relation("product", fields: [productId], references: [productId])
+  orderId           String
+  order             order     @relation(fields: [orderId], references: [orderId])
+  companyId         Int
+  company           company   @relation(fields: [companyId], references: [companyId])
+}
+
+model orderPayments {
+  orderPaymentId Int         @id @default(autoincrement())
+  type           PaymentType @default(CASH)
+  paidAmount     Decimal     @db.Money
+  paymentModeId  Int
+  paymentMode    paymentMode @relation(fields: [paymentModeId], references: [paymentModeId])
+  orderId        String
+  order          order       @relation(fields: [orderId], references: [orderId])
+  createdAt      DateTime?   @default(now())
+  createdBy      BigInt?
+  companyId      Int
+  company        company     @relation(fields: [companyId], references: [companyId])
+}
