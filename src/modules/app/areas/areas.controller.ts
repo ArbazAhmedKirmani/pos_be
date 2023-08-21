@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { Authorized, User } from 'src/utils/decorators';
 import { UserRole } from '@prisma/client';
+import { CreateAreaDto } from './dto/create-area.dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Areas')
@@ -21,7 +22,7 @@ export class AreasController {
 
   @Authorized([UserRole.ADMIN, UserRole.SUB_ADMIN, UserRole.MANAGER])
   @Post()
-  async createArea(@Body() dto, @User() user: AuthUser) {
+  async createArea(@Body() dto: CreateAreaDto, @User() user: AuthUser) {
     return await this.areaService.createArea(dto, user);
   }
 }

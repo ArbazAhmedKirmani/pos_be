@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ENV_CONSTANTS } from 'src/constants/env.constant';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
+import { CreateAreaDto } from './dto/create-area.dto';
 
 @Injectable()
 export class AreasService {
@@ -29,10 +30,10 @@ export class AreasService {
     }
   }
 
-  async createArea(dto, user: AuthUser) {
+  async createArea(dto: CreateAreaDto, user: AuthUser) {
     try {
       const area = await this.prisma.areas.findFirst({
-        where: { areaName: dto.areaName },
+        where: { areaName: dto.areaName, isDeleted: false },
       });
       if (area)
         throw new HttpException(
@@ -49,6 +50,16 @@ export class AreasService {
           endTime: dto.endTime,
           companyId: user.company.companyId,
           createdBy: user.userId,
+          branch: {
+            connect: dto.allBranch
+              ? await this.prisma.branch.findMany({
+                  where: {
+                    companyId: user.company.companyId,
+                    isDeleted: false,
+                  },
+                })
+              : dto.branchIds,
+          },
         },
       });
       return 'Area created successfully';

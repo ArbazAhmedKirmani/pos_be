@@ -3,7 +3,7 @@ import { decryptText, generateRandomPassword } from 'src/helpers';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { catchErrorResponse } from 'src/utils/responses';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UpdateUserBranchDto, UpdateUserDto } from './dto';
 import { CompanySetttings, NotificationSettings } from '@prisma/client';
 
 @Injectable()
@@ -95,6 +95,55 @@ export class UsersService {
       });
 
       return 'User has been successfully created';
+    } catch (error) {
+      catchErrorResponse(error);
+    }
+  }
+
+  async updateUser(dto: UpdateUserDto, user: AuthUser) {
+    try {
+      const user_id = dto.userId;
+      delete dto.userId;
+
+      const updated_user = await this.prisma.users.update({
+        where: {
+          companyId: user.company.companyId,
+          userId: user_id,
+          isApproved: true,
+          isDeleted: false,
+        },
+        data: { ...dto, updatedBy: user.userId },
+        select: { userId: true },
+      });
+
+      if (!updated_user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      return 'User updated successfully';
+    } catch (error) {
+      catchErrorResponse(error);
+    }
+  }
+
+  async updateUserBranches(dto: UpdateUserBranchDto, user: AuthUser) {
+    try {
+      const updated_user = await this.prisma.users.update({
+        where: {
+          companyId: user.company.companyId,
+          userId: dto.userId,
+          isApproved: true,
+          isDeleted: false,
+        },
+        data: {
+          branch: { set: [], connect: dto.branches },
+        },
+        select: { userId: true },
+      });
+
+      if (!updated_user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      return 'User updated successfully';
     } catch (error) {
       catchErrorResponse(error);
     }

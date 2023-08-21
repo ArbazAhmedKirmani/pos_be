@@ -15,6 +15,7 @@ import { Authorized, User } from 'src/utils/decorators';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { AssignUser, CreateBranchDto } from './dto';
 import { UserRole } from '@prisma/client';
+import { UpdateBranchDto } from './dto/update-branch.dto';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Branch')
@@ -57,9 +58,13 @@ export class BranchController {
   }
 
   @HttpCode(HttpStatus.CREATED)
-  @Patch()
-  async updateBranch(@Body() dto, @User() user: AuthUser) {
-    return this.branchService.updateBranch(dto, user);
+  @Patch(':id')
+  async updateBranch(
+    @Param('id') param: number,
+    @Body() dto: UpdateBranchDto,
+    @User() user: AuthUser,
+  ) {
+    return this.branchService.updateBranch(param, dto, user);
   }
 
   @Authorized([UserRole.ADMIN, UserRole.SUB_ADMIN, UserRole.MANAGER])

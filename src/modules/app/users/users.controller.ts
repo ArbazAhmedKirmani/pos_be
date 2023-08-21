@@ -5,7 +5,9 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -15,7 +17,7 @@ import { Authorized, User } from 'src/utils/decorators';
 import { UserRole } from '@prisma/client';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UpdateUserBranchDto, UpdateUserDto } from './dto';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Users')
@@ -64,5 +66,22 @@ export class UsersController {
   @Authorized([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUB_ADMIN])
   async createUser(@Body() dto: CreateUserDto, @User() user: AuthUser) {
     return await this.userService.createUser(dto, user);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Patch()
+  @Authorized([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUB_ADMIN])
+  async updateUser(@Body() dto: UpdateUserDto, @User() user: AuthUser) {
+    return await this.userService.updateUser(dto, user);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Put('update-branch')
+  @Authorized([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUB_ADMIN])
+  async updateUserBranches(
+    @Body() dto: UpdateUserBranchDto,
+    @User() user: AuthUser,
+  ) {
+    return await this.userService.updateUserBranches(dto, user);
   }
 }

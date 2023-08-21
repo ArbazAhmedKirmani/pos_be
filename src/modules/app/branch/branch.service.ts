@@ -4,6 +4,7 @@ import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { AssignUser, CreateBranchDto } from './dto';
 import { UserRole } from '@prisma/client';
 import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { catchErrorResponse } from 'src/utils/responses';
 
 @Injectable()
 export class BranchService {
@@ -57,7 +58,7 @@ export class BranchService {
       });
       return branches;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
+      catchErrorResponse(error);
     }
   }
 
@@ -72,7 +73,7 @@ export class BranchService {
 
       return branch;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
+      catchErrorResponse(error);
     }
   }
 
@@ -102,28 +103,27 @@ export class BranchService {
       });
       return await this.getAllBranches(user);
     } catch (error) {
-      throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
+      catchErrorResponse(error);
     }
   }
 
-  async updateBranch(dto, user: AuthUser) {
+  async updateBranch(param: number, dto, user: AuthUser) {
     try {
-      await this.prisma.branch.update({
-        where: { branchId: dto.branchId },
-        data: {
-          branchName: dto?.branchName,
-          longitude: dto?.longitude,
-          latitude: dto?.latitude,
-          description: dto?.description,
-          address: dto?.address,
-          startTime: dto?.startTime,
-          endTime: dto?.endTime,
+      const branch = await this.prisma.branch.update({
+        where: {
+          branchId: param,
+          companyId: user.company.companyId,
+          isDeleted: false,
         },
+        data: { ...dto, updatedBy: user.userId },
       });
+
+      if (branch)
+        throw new HttpException('Branch not found', HttpStatus.NOT_FOUND);
 
       return 'Branch updated successfully';
     } catch (error) {
-      throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
+      catchErrorResponse(error);
     }
   }
 
@@ -137,15 +137,19 @@ export class BranchService {
         },
         data: {
           user: {
-            connect: dto.userIds.map((user) => ({ userId: user.userId })),
+            set: [],
+            connect: dto.userIds,
           },
         },
         select: { branchName: true },
       });
 
+      if (!branch)
+        throw new HttpException('Branch not found', HttpStatus.NOT_FOUND);
+
       return `Users successfully assigned to ${branch.branchName} Branch`;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
+      catchErrorResponse(error);
     }
   }
 }
