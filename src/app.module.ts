@@ -13,6 +13,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard, RolesGuard } from './utils/guards';
 import { NotificationModule } from './modules/notification/notification.module';
 import { AreasModule } from './modules/app/areas/areas.module';
+import { SizeAndFlavourModule } from './modules/app/size-and-flavour/size-and-flavour.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AreasModule } from './modules/app/areas/areas.module';
     JwtAuthModule,
     NotificationModule,
     AreasModule,
+    SizeAndFlavourModule,
   ],
   providers: [
     {

@@ -4,7 +4,11 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { catchErrorResponse } from 'src/utils/responses';
 import { CreateUserDto, UpdateUserBranchDto, UpdateUserDto } from './dto';
-import { CompanySetttings, NotificationSettings } from '@prisma/client';
+import {
+  CompanySetttings,
+  NotificationSettings,
+  UserRole,
+} from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -75,7 +79,21 @@ export class UsersService {
           fullname: dto.fullname,
           email: dto.email,
           role: dto.role,
-          branch: { connect: [{ branchId: dto.branchId }] },
+          branch: {
+            connect:
+              dto.allBranches &&
+              dto.role !==
+                (UserRole.CASHIER ||
+                  UserRole.BRANCH_MANAGER ||
+                  UserRole.CALL_CENTER)
+                ? await this.prisma.branch.findMany({
+                    where: {
+                      companyId: user.company.companyId,
+                      isDeleted: false,
+                    },
+                  })
+                : dto.branchIds,
+          },
           password: auto_generated_password,
           notification: true,
           createdBy: user.userId,

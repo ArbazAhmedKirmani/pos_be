@@ -4,26 +4,26 @@ const config = new ConfigService();
 
 export const ENV_CONSTANTS = {
   APP: {
-    FRONTEND_URL: config.get<string>('FRONTEND_URL'),
-    BACKEND_URL: config.get<string>('BACKEND_URL'),
+    FRONTEND_URL: process.env.FRONTEND_URL,
+    BACKEND_URL: process.env.BACKEND_URL,
   },
-  DEFAULT_PASSWORD: config.get<string>('DEFAULT_PASSWORD'),
+  DEFAULT_PASSWORD: process.env.DEFAULT_PASSWORD,
   ENCRYPTION: {
-    ALGORITHM: config.get<string>('ENCRYPTION_ALGORITHM'),
-    PASSWORD: config.get<string>('ENCRYPTION_PASSWORD'),
+    ALGORITHM: process.env.ENCRYPTION_ALGORITHM,
+    PASSWORD: process.env.ENCRYPTION_PASSWORD,
   },
   JWT: {
-    SECRET_KEY: config.get<string>('JWT_SECRET_KEY'),
-    ACCESS_EXPIRY: config.get<string>('JWT_ACCESS_EXPIRY'),
-    REFRESH_EXPIRY: config.get<string>('JWT_REFRESH_EXPIRY'),
+    SECRET_KEY: process.env.JWT_SECRET_KEY,
+    ACCESS_EXPIRY: process.env.JWT_ACCESS_EXPIRY,
+    REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY,
   },
   EMAIL: {
     CONFIG: {
-      HOST: config.get<string>('EMAIL_HOST'),
-      USER: config.get<string>('EMAIL_USER'),
-      PASSWORD: config.get<string>('EMAIL_PASSWORD'),
-      FORM: config.get<string>('EMAIL_FROM'),
-      PORT: config.get<number>('EMAIL_PORT'),
+      HOST: process.env.EMAIL_HOST,
+      USER: process.env.EMAIL_USER,
+      PASSWORD: process.env.EMAIL_PASSWORD,
+      FORM: process.env.EMAIL_FROM,
+      PORT: Number(process.env.EMAIL_PORT),
     },
     TEMPLATES: {
       FORGOT_EMAIL: 'forgot-email',
@@ -31,8 +31,8 @@ export const ENV_CONSTANTS = {
     },
   },
   REDIS: {
-    HOST: config.get<string>('REDIS_HOST'),
-    PORT: config.get<number>('REDIS_PORT'),
+    HOST: process.env.REDIS_HOST,
+    PORT: Number(process.env.REDIS_PORT),
   },
   BULL: {
     QUEUE: {
@@ -46,9 +46,9 @@ export const ENV_CONSTANTS = {
     },
   },
   ONE_SIGNAL: {
-    APP_ID: config.get<string>('ONESIGNAL_APP_ID'),
-    CLIENT_ID: config.get<string>('ONESIGNAL_CLIENT_ID'),
-    API_KEY: config.get<string>('ONESIGNAL_API_KEY'),
+    APP_ID: process.env.ONESIGNAL_APP_ID,
+    CLIENT_ID: process.env.ONESIGNAL_CLIENT_ID,
+    API_KEY: process.env.ONESIGNAL_API_KEY,
   },
   QUERY: {
     TAKE: 10,

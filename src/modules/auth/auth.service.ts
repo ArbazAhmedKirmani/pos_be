@@ -91,6 +91,14 @@ export class AuthService {
         where: { companyId: user.company.companyId },
       });
 
+      if (dto?.playerId)
+        await this.prisma.devices.create({
+          data: {
+            device: dto.playerId,
+            userId: user.userId,
+          },
+        });
+
       if (
         +user.company.companySettings[
           CompanySetttings.NUMBER_OF_ACTIVE_USERS
@@ -195,11 +203,20 @@ export class AuthService {
           isApproved: false,
         },
         select: {
+          userId: true,
           email: true,
           fullname: true,
           company: { select: { companyName: true } },
         },
       });
+
+      if (dto?.playerId)
+        await this.prisma.devices.create({
+          data: {
+            device: dto.playerId,
+            userId: user.userId,
+          },
+        });
 
       this.queueService.signupEmail({
         email: dto.email,
@@ -302,6 +319,12 @@ export class AuthService {
       await this.prisma.devices.deleteMany({
         where: { userId: user.userId, device: dto?.playerId },
       });
+
+      if (dto?.playerId)
+        await this.prisma.devices.delete({
+          where: { device: dto.playerId, userId: user.userId },
+        });
+
       return 'Logout Successfully';
     } catch (error) {
       throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);

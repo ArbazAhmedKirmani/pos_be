@@ -41,4 +41,8 @@ export class LocalSignupDto {
   @IsNotEmpty()
   @IsEnum(BusinessType)
   businessType: BusinessType;
+
+  @ApiProperty()
+  @IsString()
+  playerId: string;
 }

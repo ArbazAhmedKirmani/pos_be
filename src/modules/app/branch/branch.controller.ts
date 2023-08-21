@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -55,6 +56,13 @@ export class BranchController {
   @Post()
   async createBranch(@Body() dto: CreateBranchDto, @User() user: AuthUser) {
     return await this.branchService.createBranch(dto, user);
+  }
+
+  @Authorized([UserRole.ADMIN, UserRole.SUB_ADMIN])
+  @HttpCode(HttpStatus.CREATED)
+  @Delete(':id')
+  async deleteBranch(@Param('id') id: number, @User() user: AuthUser) {
+    return await this.branchService.deleteBranch(id, user);
   }
 
   @HttpCode(HttpStatus.CREATED)

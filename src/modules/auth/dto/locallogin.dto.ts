@@ -11,4 +11,8 @@ export class LocalLoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty()
+  @IsString()
+  playerId: string;
 }

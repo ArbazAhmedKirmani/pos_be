@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsString,
-  isEnum,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -32,7 +31,12 @@ export class CreateUserDto {
   role: UserRole;
 
   @ApiProperty()
-  @IsNumber()
+  @IsArray()
   @IsNotEmpty()
-  branchId: number;
+  branchIds: Array<{ branchId: number }>;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  allBranches: boolean;
 }

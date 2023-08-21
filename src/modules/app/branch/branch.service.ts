@@ -88,6 +88,21 @@ export class BranchService {
           HttpStatus.CONFLICT,
         );
 
+      const user_list = await this.prisma.users.findMany({
+        where: {
+          companyId: user.company.companyId,
+          isDeleted: false,
+          isApproved: true,
+          role: {
+            in: [
+              UserRole.CASHIER,
+              UserRole.BRANCH_MANAGER,
+              UserRole.CALL_CENTER,
+            ],
+          },
+        },
+        select: { userId: true },
+      });
       await this.prisma.branch.create({
         data: {
           branchName: dto.branchName,
@@ -99,9 +114,42 @@ export class BranchService {
           endTime: dto.endTime,
           companyId: user.company.companyId,
           createdBy: user.userId,
+          user: {
+            connect: user_list.map((user) => ({ userId: user.userId })),
+          },
+        },
+        select: { branchId: true },
+      });
+
+      return await this.getAllBranches(user);
+    } catch (error) {
+      catchErrorResponse(error);
+    }
+  }
+
+  async deleteBranch(id: number, user: AuthUser) {
+    try {
+      const branch = await this.prisma.branch.findFirst({
+        where: {
+          branchId: id,
+          companyId: user.company.companyId,
+          isDeleted: false,
         },
       });
-      return await this.getAllBranches(user);
+
+      if (!branch)
+        throw new HttpException('Branch Not Found', HttpStatus.NOT_FOUND);
+
+      await this.prisma.branch.update({
+        where: {
+          branchId: id,
+          isDeleted: false,
+          companyId: user.company.companyId,
+        },
+        data: { isDeleted: true, updatedBy: user.userId },
+      });
+
+      return 'Branch Deleted Successfully';
     } catch (error) {
       catchErrorResponse(error);
     }

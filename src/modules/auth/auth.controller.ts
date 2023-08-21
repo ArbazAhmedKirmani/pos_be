@@ -74,7 +74,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   async logout(
-    @Body() dto: { access_token: string; refresh_token: string },
+    @Body()
+    dto: { access_token: string; refresh_token: string; playerId?: string },
     @User() user: AuthUser,
   ) {
     return await this.authService.logout(dto, user);
