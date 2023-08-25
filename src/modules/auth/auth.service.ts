@@ -13,6 +13,7 @@ import {
   ChangePasswordDto,
   ForgotPasswordDto,
   LocalSignupDto,
+  RefreshDto,
   ResetPasswordDto,
 } from './dto';
 import {
@@ -39,7 +40,7 @@ export class AuthService {
         where: {
           email: dto.email,
           isActive: true,
-          isDeleted: false,
+          deletedAt: null,
         },
         select: {
           userId: true,
@@ -144,6 +145,7 @@ export class AuthService {
           accessToken: access_token,
           refreshToken: refresh_token,
           companyId: user.company.companyId,
+          expireAt: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
         },
       });
 
@@ -314,11 +316,31 @@ export class AuthService {
     }
   }
 
-  async logout(dto, user: AuthUser) {
+  async logout(
+    dto: { access_token: string; refresh_token: string; playerId?: string },
+    user: AuthUser,
+  ) {
     try {
       await this.prisma.devices.deleteMany({
         where: { userId: user.userId, device: dto?.playerId },
       });
+
+      const logged_out = await this.prisma.loginLogs.updateMany({
+        where: {
+          userId: user.userId,
+          refreshToken: dto.refresh_token,
+          companyId: user.company.companyId,
+          expireAt: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
+          logout: false,
+        },
+        data: { logout: true },
+      });
+
+      if (!logged_out)
+        throw new HttpException(
+          'Active login logs not found',
+          HttpStatus.UNAUTHORIZED,
+        );
 
       if (dto?.playerId)
         await this.prisma.devices.delete({
@@ -337,6 +359,27 @@ export class AuthService {
     await this.prisma.users.deleteMany();
     await this.prisma.company.deleteMany();
     return 'DB Successfully Cleaned';
+  }
+
+  async refresh(dto: RefreshDto) {
+    const refresh = await this.prisma.loginLogs.findFirst({
+      where: {
+        companyId: dto.companyId,
+        logout: false,
+        expireAt: {
+          gte: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
+        },
+        refreshToken: dto.refresh_token,
+        userId: dto.userId,
+      },
+      select: { loginLogsId: true },
+    });
+
+    if (!refresh)
+      throw new HttpException(
+        'Refresh token is already expired',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
   }
 
   generateToken(user: AuthUser) {

@@ -11,120 +11,106 @@ export class BranchService {
   constructor(private prisma: PrismaService) {}
 
   async getAllBranches(user: AuthUser, params?: QueryRequestParams) {
-    try {
-      const branches = await this.prisma.branch.findMany({
-        where: {
-          isDeleted: false,
-          companyId: user.company.companyId,
-          ...((user.role === UserRole.MANAGER ||
-            user.role === UserRole.BRANCH_MANAGER) && {
-            branchId: { in: user.branch.map((branch) => branch.branchId) },
-          }),
-          ...(params?.search?.length > 0 && {
-            branchName: { contains: params.search || undefined },
-          }),
-        },
-        skip: params?.skip || ENV_CONSTANTS.QUERY.SKIP,
-        take: params?.take || ENV_CONSTANTS.QUERY.TAKE,
-        orderBy: [{ createdAt: params?.orderBy || 'desc' }],
-        select: {
-          branchId: true,
-          branchName: true,
-          description: true,
-          longitude: true,
-          latitude: true,
-          address: true,
-          type: true,
-          startTime: true,
-          endTime: true,
-          isActive: true,
-          user: {
-            select: {
-              userId: true,
-              fullname: true,
-              email: true,
-            },
-          },
-          areas: { select: { areaId: true, areaName: true } },
-          products: {
-            select: {
-              productId: true,
-              productName: true,
-              size: { select: { sizeName: true } },
-              flavour: { select: { flavourName: true } },
-            },
+    const branches = await this.prisma.branch.findMany({
+      where: {
+        deletedAt: null,
+        companyId: user.company.companyId,
+        ...((user.role === UserRole.MANAGER ||
+          user.role === UserRole.BRANCH_MANAGER) && {
+          branchId: { in: user.branch.map((branch) => branch.branchId) },
+        }),
+        ...(params?.search?.length > 0 && {
+          branchName: { contains: params.search || undefined },
+        }),
+      },
+      skip: params?.skip || ENV_CONSTANTS.QUERY.SKIP,
+      take: params?.take || ENV_CONSTANTS.QUERY.TAKE,
+      orderBy: [{ createdAt: params?.orderBy }],
+      select: {
+        branchId: true,
+        branchName: true,
+        description: true,
+        longitude: true,
+        latitude: true,
+        address: true,
+        type: true,
+        startTime: true,
+        endTime: true,
+        isActive: true,
+        user: {
+          where: { deletedAt: null },
+          select: {
+            userId: true,
+            fullname: true,
+            email: true,
           },
         },
-      });
-      return branches;
-    } catch (error) {
-      catchErrorResponse(error);
-    }
+        areas: { select: { areaId: true, areaName: true } },
+        products: {
+          where: { deletedAt: null, isSaleable: true },
+          select: {
+            productId: true,
+            productName: true,
+            size: { select: { sizeName: true } },
+            flavour: { select: { flavourName: true } },
+          },
+        },
+      },
+    });
+    return branches;
   }
 
   async getBranchById(user: AuthUser, id: string) {
-    try {
-      const branch = await this.prisma.branch.findUnique({
-        where: { branchId: +id, user: { some: { userId: user.userId } } },
-      });
+    const branch = await this.prisma.branch.findUnique({
+      where: { branchId: +id, user: { some: { userId: user.userId } } },
+    });
 
-      if (!branch)
-        throw new HttpException('branch not found', HttpStatus.NOT_FOUND);
+    if (!branch)
+      throw new HttpException('branch not found', HttpStatus.NOT_FOUND);
 
-      return branch;
-    } catch (error) {
-      catchErrorResponse(error);
-    }
+    return branch;
   }
 
   async createBranch(dto: CreateBranchDto, user: AuthUser) {
-    try {
-      const branch = await this.prisma.branch.findFirst({
-        where: { branchName: dto.branchName, isDeleted: false },
-      });
-      if (branch)
-        throw new HttpException(
-          'Branch already exists with provided branch name',
-          HttpStatus.CONFLICT,
-        );
+    const branch = await this.prisma.branch.findFirst({
+      where: { branchName: dto.branchName, deletedAt: null },
+    });
+    if (branch)
+      throw new HttpException(
+        'Branch already exists with provided branch name',
+        HttpStatus.CONFLICT,
+      );
 
-      const user_list = await this.prisma.users.findMany({
-        where: {
-          companyId: user.company.companyId,
-          isDeleted: false,
-          isApproved: true,
-          role: {
-            in: [
-              UserRole.CASHIER,
-              UserRole.BRANCH_MANAGER,
-              UserRole.CALL_CENTER,
-            ],
-          },
+    const user_list = await this.prisma.users.findMany({
+      where: {
+        companyId: user.company.companyId,
+        deletedAt: null,
+        isApproved: true,
+        role: {
+          in: [UserRole.CASHIER, UserRole.BRANCH_MANAGER, UserRole.CALL_CENTER],
         },
-        select: { userId: true },
-      });
-      await this.prisma.branch.create({
-        data: {
-          branchName: dto.branchName,
-          type: dto.type,
-          description: dto?.description,
-          longitude: dto?.longitude,
-          latitude: dto?.latitude,
-          startTime: dto?.startTime,
-          endTime: dto.endTime,
-          companyId: user.company.companyId,
-          createdBy: user.userId,
-          user: {
-            connect: user_list.map((user) => ({ userId: user.userId })),
-          },
+      },
+      select: { userId: true },
+    });
+    await this.prisma.branch.create({
+      data: {
+        branchName: dto.branchName,
+        type: dto.type,
+        description: dto?.description,
+        longitude: dto?.longitude,
+        latitude: dto?.latitude,
+        startTime: dto?.startTime,
+        endTime: dto.endTime,
+        companyId: user.company.companyId,
+        createdBy: user.userId,
+        user: {
+          connect: user_list.map((user) => ({ userId: user.userId })),
         },
-        select: { branchId: true },
-      });
+      },
+      select: { branchId: true },
+    });
 
-      return await this.getAllBranches(user);
-    } catch (error) {
-      catchErrorResponse(error);
-    }
+    return await this.getAllBranches(user);
   }
 
   async deleteBranch(id: number, user: AuthUser) {
@@ -133,7 +119,7 @@ export class BranchService {
         where: {
           branchId: id,
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
       });
 
@@ -143,10 +129,10 @@ export class BranchService {
       await this.prisma.branch.update({
         where: {
           branchId: id,
-          isDeleted: false,
+          deletedAt: null,
           companyId: user.company.companyId,
         },
-        data: { isDeleted: true, updatedBy: user.userId },
+        data: { deletedAt: new Date(), updatedBy: user.userId },
       });
 
       return 'Branch Deleted Successfully';
@@ -161,7 +147,7 @@ export class BranchService {
         where: {
           branchId: param,
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
         data: { ...dto, updatedBy: user.userId },
       });
@@ -181,7 +167,7 @@ export class BranchService {
         where: {
           branchId: dto.branchId,
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
         data: {
           user: {

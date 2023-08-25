@@ -4,6 +4,8 @@ import { BullModule } from '@nestjs/bull';
 import { ENV_CONSTANTS } from 'src/constants/env.constant';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailConsumer } from './jobs/mail.consumer';
+import { NotificationConsumer } from './jobs/notification.consumer';
 
 @Global()
 @Module({
@@ -24,7 +26,13 @@ import { PrismaService } from '../prisma/prisma.service';
     }),
   ],
 
-  providers: [QueueService, MailService, PrismaService],
+  providers: [
+    QueueService,
+    MailService,
+    PrismaService,
+    MailConsumer,
+    NotificationConsumer,
+  ],
   exports: [QueueService],
 })
 export class QueueModule {}

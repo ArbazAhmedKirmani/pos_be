@@ -9,11 +9,15 @@ import { SocketModule } from './modules/socket/socket.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { PrismaService } from './modules/prisma/prisma.service';
 import { JwtAuthModule } from './modules/jwt/jwt.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard, RolesGuard } from './utils/guards';
 import { NotificationModule } from './modules/notification/notification.module';
 import { AreasModule } from './modules/app/areas/areas.module';
 import { SizeAndFlavourModule } from './modules/app/size-and-flavour/size-and-flavour.module';
+import { GlobalExceptionFilter } from './utils/exceptions';
+import { TableWaiterModule } from './modules/app/table-waiter/table-waiter.module';
+import { CustomerModule } from './modules/app/customer/customer.module';
+import { PaymentsModule } from './modules/app/payments/payments.module';
 
 @Module({
   imports: [
@@ -28,16 +32,14 @@ import { SizeAndFlavourModule } from './modules/app/size-and-flavour/size-and-fl
     NotificationModule,
     AreasModule,
     SizeAndFlavourModule,
+    TableWaiterModule,
+    CustomerModule,
+    PaymentsModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     AppService,
     PrismaService,
   ],

@@ -48,7 +48,7 @@ export class MailConsumer {
   @OnQueueFailed()
   onQueueFailed(job: Job, err: Error) {
     console.log(`${job.id} with name ${job.name} got FAILED. below is the log`);
-    console.error(err.name, '\n', err.message);
+    console.error(err?.name, '\n', err?.message);
   }
 
   @OnQueueError()
@@ -56,6 +56,6 @@ export class MailConsumer {
     console.log(
       `${job.id} with name ${job.name} got an ERROR. below is the log`,
     );
-    console.error(err.name, '\n', err.message);
+    console.error(err?.name, '\n', err?.message);
   }
 }

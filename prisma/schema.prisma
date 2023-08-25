@@ -111,6 +111,11 @@ enum NotificationSettings {
   DIRECT_LINK
 }
 
+enum BranchStatus {
+  OPENED
+  CLOSED
+}
+
 // MODELS =================================================
 
 model city {
@@ -132,7 +137,7 @@ model company {
   createdBy       BigInt?
   updatedAt       DateTime?         @updatedAt
   updatedBy       BigInt?
-  isDeleted       Boolean?          @default(false)
+  deletedAt       DateTime?
   users           users[]
   branch          branch[]
   size            size[]
@@ -182,7 +187,7 @@ model users {
   createdBy            BigInt?
   updatedAt            DateTime?              @updatedAt
   updatedBy            BigInt?
-  isDeleted            Boolean?               @default(false)
+  deletedAt            DateTime?
   branch               branch[]
   otp                  otp[]
   devices              devices[]
@@ -193,12 +198,12 @@ model users {
 
 model loginLogs {
   loginLogsId  String   @id @default(uuid())
-  accessToken  String
   refreshToken String
   companyId    Int
   company      company  @relation(fields: [companyId], references: [companyId])
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  expireAt     DateTime
+  logout       Boolean  @default(false)
   userId       Int
   user         users    @relation(fields: [userId], references: [userId])
 }
@@ -242,23 +247,24 @@ model otp {
 }
 
 model branch {
-  branchId    Int        @id @default(autoincrement())
+  branchId    Int          @id @default(autoincrement())
   branchName  String
-  description String?    @db.VarChar(200)
-  type        BranchType @default(OUTLET)
+  description String?      @db.VarChar(200)
+  type        BranchType   @default(OUTLET)
   address     String?
   longitude   Decimal?
   latitude    Decimal?
   startTime   String?
   endTime     String?
-  isActive    Boolean?   @default(true)
-  createdAt   DateTime?  @default(now())
+  status      BranchStatus @default(CLOSED)
+  isActive    Boolean?     @default(true)
+  createdAt   DateTime?    @default(now())
   createdBy   BigInt?
-  updatedAt   DateTime?  @updatedAt
+  updatedAt   DateTime?    @updatedAt
   updatedBy   BigInt?
-  isDeleted   Boolean?   @default(false)
+  deletedAt   DateTime?
   companyId   Int
-  company     company    @relation(fields: [companyId], references: [companyId])
+  company     company      @relation(fields: [companyId], references: [companyId])
   user        users[]
   areas       areas[]
   products    products[]
@@ -312,7 +318,7 @@ model productCategory {
   createdBy         BigInt?
   updatedAt         DateTime?  @updatedAt
   updatedBy         BigInt?
-  isDeleted         Boolean?   @default(false)
+  deletedAt         DateTime?
   companyId         Int
   company           company    @relation(fields: [companyId], references: [companyId])
   product           products[]
@@ -330,7 +336,7 @@ model productType {
   createdBy     BigInt?
   updatedAt     DateTime?  @updatedAt
   updatedBy     BigInt?
-  isDeleted     Boolean?   @default(false)
+  deletedAt     DateTime?
   companyId     Int
   company       company    @relation(fields: [companyId], references: [companyId])
   products      products[]
@@ -365,7 +371,7 @@ model products {
   createdBy         BigInt?
   updatedAt         DateTime?       @updatedAt
   updatedBy         BigInt?
-  isDeleted         Boolean?        @default(false)
+  deletedAt         DateTime?
   companyId         Int
   company           company         @relation(fields: [companyId], references: [companyId])
   branch            branch[]
@@ -385,7 +391,7 @@ model areas {
   createdBy       BigInt?
   updatedAt       DateTime? @updatedAt
   updatedBy       BigInt?
-  isDeleted       Boolean?  @default(false)
+  deletedAt       DateTime?
   companyId       Int
   company         company   @relation(fields: [companyId], references: [companyId])
   branch          branch[]
@@ -400,7 +406,7 @@ model paymentMode {
   createdBy       BigInt?
   updatedAt       DateTime?       @updatedAt
   updatedBy       BigInt?
-  isDeleted       Boolean?        @default(false)
+  deletedAt       DateTime?
   companyId       Int
   company         company         @relation(fields: [companyId], references: [companyId])
   orderPayments   orderPayments[]
@@ -414,7 +420,7 @@ model tables {
   createdBy BigInt?
   updatedAt DateTime? @updatedAt
   updatedBy BigInt?
-  isDeleted Boolean?  @default(false)
+  deletedAt DateTime?
   companyId Int
   company   company   @relation(fields: [companyId], references: [companyId])
   waiter    waiters[]
@@ -430,7 +436,7 @@ model waiters {
   createdBy  BigInt?
   updatedAt  DateTime? @updatedAt
   updatedBy  BigInt?
-  isDeleted  Boolean?  @default(false)
+  deletedAt  DateTime?
   companyId  Int
   company    company   @relation(fields: [companyId], references: [companyId])
   table      tables[]
@@ -467,7 +473,7 @@ model customer {
   createdBy       BigInt?
   updatedAt       DateTime?         @updatedAt
   updatedBy       BigInt?
-  isDeleted       Boolean?          @default(false)
+  deletedAt       DateTime?
   companyId       Int
   company         company           @relation(fields: [companyId], references: [companyId])
 }

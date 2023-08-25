@@ -1,8 +1,13 @@
 import { SizeType } from '@prisma/client';
 
+enum OrderbyType {
+  desc = 'desc',
+  asc = 'asc',
+}
+
 export interface QueryRequestParams {
   search: string;
-  orderBy: 'desc' | 'asc';
+  orderBy: OrderbyType;
   take: number;
   skip: number;
 }

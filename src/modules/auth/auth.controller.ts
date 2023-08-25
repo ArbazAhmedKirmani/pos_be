@@ -14,6 +14,7 @@ import {
   ChangePasswordDto,
   ForgotPasswordDto,
   LocalSignupDto,
+  RefreshDto,
   ResetPasswordDto,
 } from './dto';
 import { LoginResponse } from './interface';
@@ -45,8 +46,8 @@ export class AuthController {
   @UseGuards(RefreshJwtAuthGuard)
   @SkipAuth()
   @Post('/refresh')
-  refreshToken(@User() user: AuthUser) {
-    return this.authService.generateToken(user);
+  async refreshToken(@Body() dto: RefreshDto, @User() user: AuthUser) {
+    return this.authService.refresh(dto);
   }
 
   @HttpCode(HttpStatus.ACCEPTED)

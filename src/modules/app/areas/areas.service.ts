@@ -10,59 +10,53 @@ export class AreasService {
   constructor(private prisma: PrismaService) {}
 
   async getAllAreas(query: QueryRequestParams, user: AuthUser) {
-    try {
-      return await this.prisma.areas.findMany({
-        where: {
-          isDeleted: false,
-          companyId: user.company.companyId,
-          ...(query?.search && { areaName: { contains: query.search } }),
+    return await this.prisma.areas.findMany({
+      where: {
+        deletedAt: null,
+        companyId: user.company.companyId,
+        ...(query?.search && { areaName: { contains: query.search } }),
+      },
+      skip: query.skip || ENV_CONSTANTS.QUERY.SKIP,
+      take: query.take || ENV_CONSTANTS.QUERY.TAKE,
+      orderBy: { createdAt: query.orderBy || 'desc' },
+      select: {
+        areaId: true,
+        areaName: true,
+        branch: {
+          where: { deletedAt: null },
+          select: { branchId: true, branchName: true },
         },
-        skip: query.skip || ENV_CONSTANTS.QUERY.SKIP,
-        take: query.take || ENV_CONSTANTS.QUERY.TAKE,
-        orderBy: { createdAt: query.orderBy || 'desc' },
-        select: {
-          areaId: true,
-          areaName: true,
-          branch: { select: { branchId: true, branchName: true } },
-        },
-      });
-    } catch (error) {
-      catchErrorResponse(error);
-    }
+      },
+    });
   }
 
   async getAreaById(id: number, user: AuthUser) {
-    try {
-      const area = await this.prisma.areas.findUnique({
-        where: {
-          areaId: id,
-          companyId: user.company.companyId,
-          isDeleted: false,
-        },
-        select: {
-          areaId: true,
-          areaName: true,
-          startTime: true,
-          endTime: true,
-          deliveryCharges: true,
-          deliveryTime: true,
-          branch: { select: { branchId: true, branchName: true } },
-        },
-      });
+    const area = await this.prisma.areas.findUnique({
+      where: {
+        areaId: id,
+        companyId: user.company.companyId,
+        deletedAt: null,
+      },
+      select: {
+        areaId: true,
+        areaName: true,
+        startTime: true,
+        endTime: true,
+        deliveryCharges: true,
+        deliveryTime: true,
+        branch: { select: { branchId: true, branchName: true } },
+      },
+    });
 
-      if (!area)
-        throw new HttpException('Area not found', HttpStatus.NOT_FOUND);
+    if (!area) throw new HttpException('Area not found', HttpStatus.NOT_FOUND);
 
-      return area;
-    } catch (error) {
-      catchErrorResponse(error);
-    }
+    return area;
   }
 
   async createArea(dto: CreateAreaDto, user: AuthUser) {
     try {
       const area = await this.prisma.areas.findFirst({
-        where: { areaName: dto.areaName, isDeleted: false },
+        where: { areaName: dto.areaName, deletedAt: null },
       });
       if (area)
         throw new HttpException(
@@ -84,7 +78,7 @@ export class AreasService {
               ? await this.prisma.branch.findMany({
                   where: {
                     companyId: user.company.companyId,
-                    isDeleted: false,
+                    deletedAt: null,
                   },
                 })
               : dto.branchIds,
@@ -104,7 +98,7 @@ export class AreasService {
       const area = await this.prisma.areas.findUnique({
         where: {
           areaId: area_id,
-          isDeleted: false,
+          deletedAt: null,
           companyId: user.company.companyId,
         },
         select: { areaId: true },
@@ -130,9 +124,9 @@ export class AreasService {
         where: {
           areaId: id,
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
-        data: { isDeleted: true, updatedBy: user.userId },
+        data: { deletedAt: new Date(), updatedBy: user.userId },
         select: { areaId: true },
       });
 

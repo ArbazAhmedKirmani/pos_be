@@ -6,6 +6,7 @@ export const ENV_CONSTANTS = {
   APP: {
     FRONTEND_URL: process.env.FRONTEND_URL,
     BACKEND_URL: process.env.BACKEND_URL,
+    PORT: process.env.APP_PORT,
   },
   DEFAULT_PASSWORD: process.env.DEFAULT_PASSWORD,
   ENCRYPTION: {

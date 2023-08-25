@@ -43,7 +43,7 @@ export class UsersService {
         where: {
           userId: user_id,
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
       });
       delete user_by_id.password;
@@ -58,7 +58,7 @@ export class UsersService {
       const user_count: number = await this.prisma.users.count({
         where: {
           companyId: user.company.companyId,
-          isDeleted: false,
+          deletedAt: null,
         },
       });
 
@@ -89,7 +89,7 @@ export class UsersService {
                 ? await this.prisma.branch.findMany({
                     where: {
                       companyId: user.company.companyId,
-                      isDeleted: false,
+                      deletedAt: null,
                     },
                   })
                 : dto.branchIds,
@@ -128,7 +128,7 @@ export class UsersService {
           companyId: user.company.companyId,
           userId: user_id,
           isApproved: true,
-          isDeleted: false,
+          deletedAt: null,
         },
         data: { ...dto, updatedBy: user.userId },
         select: { userId: true },
@@ -150,7 +150,7 @@ export class UsersService {
           companyId: user.company.companyId,
           userId: dto.userId,
           isApproved: true,
-          isDeleted: false,
+          deletedAt: null,
         },
         data: {
           branch: { set: [], connect: dto.branches },

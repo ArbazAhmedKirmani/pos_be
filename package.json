@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.1.8",
     "@prisma/client": "^5.1.1",
+    "@vercel/node": "^3.0.0",
     "bcrypt": "^5.1.0",
     "bull": "^4.11.3",
     "class-transformer": "^0.5.1",
