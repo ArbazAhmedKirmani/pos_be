@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 
 @Global()
 @Module({
@@ -10,9 +10,9 @@ import { ENV_CONSTANTS } from 'src/constants/env.constant';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         global: true,
-        secret: ENV_CONSTANTS.JWT.SECRET_KEY,
+        secret: AppConfig.JWT.SECRET_KEY,
         signOptions: {
-          expiresIn: ENV_CONSTANTS.JWT.ACCESS_EXPIRY,
+          expiresIn: AppConfig.JWT.ACCESS_EXPIRY,
         }, // Token expiration time
       }),
       inject: [ConfigService],

@@ -36,9 +36,9 @@ export class UsersService {
     }
   }
 
-  async getUsetById(id: string | number, user: AuthUser) {
+  async getUsetById(id: number, user: AuthUser) {
     try {
-      const user_id: number = +id; //+decryptText(id);
+      const user_id: number = id; //+decryptText(id);
       const user_by_id = await this.prisma.users.findUnique({
         where: {
           userId: user_id,
@@ -71,7 +71,7 @@ export class UsersService {
           HttpStatus.CONFLICT,
         );
 
-      const auto_generated_password = generateRandomPassword();
+      const auto_generated_password = await generateRandomPassword();
 
       await this.prisma.users.create({
         data: {

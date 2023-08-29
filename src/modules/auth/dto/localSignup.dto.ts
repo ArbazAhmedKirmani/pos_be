@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { BusinessType } from '@prisma/client';
 import {
   IsEmail,
-  IsEmpty,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -26,14 +26,17 @@ export class LocalSignupDto {
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   address: string;
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   phone: string;
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   website: string;
 
   @ApiProperty({ enum: BusinessType })
@@ -44,5 +47,6 @@ export class LocalSignupDto {
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   playerId: string;
 }

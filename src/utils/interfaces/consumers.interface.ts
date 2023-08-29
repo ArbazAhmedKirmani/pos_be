@@ -3,6 +3,7 @@ import { NotificationType } from '@prisma/client';
 export interface ForgotEmailProcess {
   email: string;
   userId: number;
+  fullname: string;
 }
 
 export interface NotificationProcess {

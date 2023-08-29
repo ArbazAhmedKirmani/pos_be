@@ -11,12 +11,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { BranchService } from './branch.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Authorized, User } from 'src/utils/decorators';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { AssignUser, CreateBranchDto } from './dto';
 import { UserRole } from '@prisma/client';
 import { UpdateBranchDto } from './dto/update-branch.dto';
+import { ParamsDto, QueryParamDto } from 'src/utils/dto';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Branch')
@@ -24,6 +25,7 @@ import { UpdateBranchDto } from './dto/update-branch.dto';
 export class BranchController {
   constructor(private branchService: BranchService) {}
 
+  @ApiQuery({ type: QueryParamDto })
   @Authorized([
     UserRole.ADMIN,
     UserRole.BRANCH_MANAGER,
@@ -39,6 +41,7 @@ export class BranchController {
     return await this.branchService.getAllBranches(user, params);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @Authorized([
     UserRole.ADMIN,
     UserRole.BRANCH_MANAGER,
@@ -48,7 +51,7 @@ export class BranchController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   async getBranchById(@User() user: AuthUser, @Param('id') id: string) {
-    return await this.branchService.getBranchById(user, id);
+    return await this.branchService.getBranchById(user, Number(id));
   }
 
   @Authorized([UserRole.ADMIN, UserRole.SUB_ADMIN])

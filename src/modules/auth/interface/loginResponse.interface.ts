@@ -28,4 +28,5 @@ export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   notifications: { new_notification: number; new_order: number };
+  message?: string;
 }

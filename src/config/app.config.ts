@@ -2,11 +2,12 @@ import { ConfigService } from '@nestjs/config';
 
 const config = new ConfigService();
 
-export const ENV_CONSTANTS = {
+export const AppConfig = {
   APP: {
     FRONTEND_URL: process.env.FRONTEND_URL,
     BACKEND_URL: process.env.BACKEND_URL,
     PORT: process.env.APP_PORT,
+    DEBUG: true,
   },
   DEFAULT_PASSWORD: process.env.DEFAULT_PASSWORD,
   ENCRYPTION: {
@@ -55,5 +56,8 @@ export const ENV_CONSTANTS = {
     TAKE: 10,
     SKIP: 0,
     ORDER_BY: 'desc',
+  },
+  I18N: {
+    FALLBACK_LANG: 'en',
   },
 };

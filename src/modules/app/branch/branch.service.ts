@@ -3,7 +3,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { AssignUser, CreateBranchDto } from './dto';
 import { UserRole } from '@prisma/client';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { catchErrorResponse } from 'src/utils/responses';
 
 @Injectable()
@@ -23,8 +23,8 @@ export class BranchService {
           branchName: { contains: params.search || undefined },
         }),
       },
-      skip: params?.skip || ENV_CONSTANTS.QUERY.SKIP,
-      take: params?.take || ENV_CONSTANTS.QUERY.TAKE,
+      skip: params?.skip || AppConfig.QUERY.SKIP,
+      take: params?.take || AppConfig.QUERY.TAKE,
       orderBy: [{ createdAt: params?.orderBy }],
       select: {
         branchId: true,
@@ -60,9 +60,9 @@ export class BranchService {
     return branches;
   }
 
-  async getBranchById(user: AuthUser, id: string) {
+  async getBranchById(user: AuthUser, id: number) {
     const branch = await this.prisma.branch.findUnique({
-      where: { branchId: +id, user: { some: { userId: user.userId } } },
+      where: { branchId: id, user: { some: { userId: user.userId } } },
     });
 
     if (!branch)

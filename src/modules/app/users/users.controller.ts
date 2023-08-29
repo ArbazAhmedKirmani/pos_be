@@ -15,9 +15,10 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from 'src/utils/guards';
 import { Authorized, User } from 'src/utils/decorators';
 import { UserRole } from '@prisma/client';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { CreateUserDto, UpdateUserBranchDto, UpdateUserDto } from './dto';
+import { ParamsDto, QueryParamDto } from 'src/utils/dto';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Users')
@@ -25,6 +26,7 @@ import { CreateUserDto, UpdateUserBranchDto, UpdateUserDto } from './dto';
 export class UsersController {
   constructor(private userService: UsersService) {}
 
+  @ApiQuery({ type: QueryParamDto })
   @HttpCode(HttpStatus.OK)
   @Authorized([
     UserRole.ADMIN,
@@ -37,6 +39,7 @@ export class UsersController {
     return this.userService.getAll(query, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   @Authorized([
@@ -46,7 +49,7 @@ export class UsersController {
     UserRole.BRANCH_MANAGER,
   ])
   async getUserById(@Param('id') id: string, @User() user: AuthUser) {
-    return await this.userService.getUsetById(id, user);
+    return await this.userService.getUsetById(Number(id), user);
   }
 
   @HttpCode(HttpStatus.OK)

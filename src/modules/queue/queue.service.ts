@@ -1,34 +1,37 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { ForgotEmailProcess, NotificationProcess } from 'src/utils/interfaces';
 
 @Injectable()
 export class QueueService {
   constructor(
-    @InjectQueue(ENV_CONSTANTS.BULL.QUEUE.MAIL) private mailQueue: Queue,
-    @InjectQueue(ENV_CONSTANTS.BULL.QUEUE.NOTIFICATION)
+    @InjectQueue(AppConfig.BULL.QUEUE.MAIL) private mailQueue: Queue,
+    @InjectQueue(AppConfig.BULL.QUEUE.NOTIFICATION)
     private notificationQueue: Queue,
   ) {}
 
   forgotPasswordEmail(jobData: ForgotEmailProcess) {
-    this.mailQueue.add(ENV_CONSTANTS.BULL.JOBS.FORGOT_EMAIL, jobData, {
+    this.mailQueue.add(AppConfig.BULL.JOBS.FORGOT_EMAIL, jobData, {
       lifo: false,
     });
   }
 
-  signupEmail(jobData) {
-    this.mailQueue.add(ENV_CONSTANTS.BULL.JOBS.SIGNUP_EMAIL, jobData, {
+  signupEmail(jobData: {
+    email: string;
+    fullname: string;
+    companyName: string;
+    userId: number;
+  }) {
+    this.mailQueue.add(AppConfig.BULL.JOBS.SIGNUP_EMAIL, jobData, {
       lifo: false,
     });
   }
 
   sendNotification(jobData: NotificationProcess) {
-    this.notificationQueue.add(
-      ENV_CONSTANTS.BULL.JOBS.SEND_NOTIFICATION,
-      jobData,
-      { lifo: false },
-    );
+    this.notificationQueue.add(AppConfig.BULL.JOBS.SEND_NOTIFICATION, jobData, {
+      lifo: false,
+    });
   }
 }

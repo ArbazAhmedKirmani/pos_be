@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsDecimal,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -15,13 +16,13 @@ export class CreateAreaDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  startTime: string;
+  @IsOptional()
+  startTime?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  endTime: string;
+  @IsOptional()
+  endTime?: string;
 
   @ApiProperty()
   @IsString()
@@ -40,5 +41,6 @@ export class CreateAreaDto {
 
   @ApiProperty()
   @IsArray()
+  @IsOptional()
   branchIds: Array<{ branchId: number }>;
 }

@@ -4,23 +4,23 @@ import { MailController } from './mail.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 
 @Module({
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: ENV_CONSTANTS.EMAIL.CONFIG.HOST,
-        port: ENV_CONSTANTS.EMAIL.CONFIG.PORT,
+        host: AppConfig.EMAIL.CONFIG.HOST,
+        port: AppConfig.EMAIL.CONFIG.PORT,
         secure: false,
         requireTLS: true,
         auth: {
-          user: ENV_CONSTANTS.EMAIL.CONFIG.USER,
-          pass: ENV_CONSTANTS.EMAIL.CONFIG.PASSWORD,
+          user: AppConfig.EMAIL.CONFIG.USER,
+          pass: AppConfig.EMAIL.CONFIG.PASSWORD,
         },
       },
       defaults: {
-        from: ENV_CONSTANTS.EMAIL.CONFIG.FORM,
+        from: AppConfig.EMAIL.CONFIG.FORM,
       },
       template: {
         dir: join(__dirname, './templates'),

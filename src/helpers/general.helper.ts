@@ -1,6 +1,6 @@
 import { hashString } from './hashAndEncrypt.helper';
 
-export function generateRandomPassword(length: number = 6): any {
+export async function generateRandomPassword(length: number = 6) {
   const characters = '0123456789';
   let password: string = '';
   for (let i = 0; i < length; i++) {

@@ -1,6 +1,6 @@
 import { SizeType } from '@prisma/client';
 
-enum OrderbyType {
+export enum OrderbyType {
   desc = 'desc',
   asc = 'asc',
 }

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { InjectPipes, InjectSwagger } from './utils/injectors';
-import { ENV_CONSTANTS } from './constants/env.constant';
+import { AppConfig } from './config/app.config';
 import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
@@ -15,6 +15,6 @@ async function bootstrap() {
   InjectPipes(app);
   InjectSwagger(app);
 
-  await app.listen(ENV_CONSTANTS.APP.PORT || 3333);
+  await app.listen(AppConfig.APP.PORT || 3333);
 }
 bootstrap();

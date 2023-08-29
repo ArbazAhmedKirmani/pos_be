@@ -10,7 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SizeAndFlavourService } from './size-and-flavour.service';
 import {
   AuthUser,
@@ -24,6 +24,7 @@ import {
   UpdateFlavourDto,
   UpdateSizeDto,
 } from './dto';
+import { ParamsDto, QueryParamDto } from 'src/utils/dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Size And Flavour')
@@ -31,12 +32,14 @@ import {
 export class SizeAndFlavourController {
   constructor(private sizeAndFlavour: SizeAndFlavourService) {}
 
+  @ApiQuery({ type: QueryParamDto })
   @HttpCode(HttpStatus.OK)
   @Get('size')
   getAllSizes(@Query() query: SizeQueryParamInterface, @User() user: AuthUser) {
     return this.sizeAndFlavour.getAllSizes(query, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.OK)
   @Get('size/:id')
   async getSizeById(@Param('id') id: number, @User() user: AuthUser) {
@@ -49,14 +52,15 @@ export class SizeAndFlavourController {
     return await this.sizeAndFlavour.createSize(dto, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.CREATED)
   @Patch('size/:id')
   async updateSize(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() dto: UpdateSizeDto,
     @User() user: AuthUser,
   ) {
-    return await this.sizeAndFlavour.updateSize(id, dto, user);
+    return await this.sizeAndFlavour.updateSize(Number(id), dto, user);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -65,16 +69,18 @@ export class SizeAndFlavourController {
     return await this.sizeAndFlavour.deleteSize(id, user);
   }
 
+  @ApiQuery({ type: QueryParamDto })
   @HttpCode(HttpStatus.OK)
   @Get('flavour')
   getAllFlavours(@Query() query: QueryRequestParams, @User() user: AuthUser) {
     return this.sizeAndFlavour.getAllFlavours(query, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.OK)
   @Get('flavour/:id')
-  async getFlavourById(@Param('id') id: number, @User() user: AuthUser) {
-    return await this.sizeAndFlavour.getFlavourById(id, user);
+  async getFlavourById(@Param('id') id: string, @User() user: AuthUser) {
+    return await this.sizeAndFlavour.getFlavourById(Number(id), user);
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -83,14 +89,15 @@ export class SizeAndFlavourController {
     return await this.sizeAndFlavour.createFlavour(dto, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.CREATED)
   @Patch('flavour/:id')
   async updateFlavour(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() dto: UpdateFlavourDto,
     @User() user: AuthUser,
   ) {
-    return await this.sizeAndFlavour.updateFlavour(id, dto, user);
+    return await this.sizeAndFlavour.updateFlavour(Number(id), dto, user);
   }
 
   @HttpCode(HttpStatus.OK)

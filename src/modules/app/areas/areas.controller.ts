@@ -11,11 +11,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { AreasService } from './areas.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { Authorized, User } from 'src/utils/decorators';
 import { UserRole } from '@prisma/client';
 import { CreateAreaDto, UpdateAreaDto } from './dto';
+import { ParamsDto, QueryParamDto } from 'src/utils/dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Areas')
@@ -23,7 +24,9 @@ import { CreateAreaDto, UpdateAreaDto } from './dto';
 export class AreasController {
   constructor(private areaService: AreasService) {}
 
+  @ApiQuery({ type: QueryParamDto })
   @HttpCode(HttpStatus.OK)
+  @Authorized([UserRole.ADMIN, UserRole.MANAGER, UserRole.SUB_ADMIN])
   @Get()
   async getAllAreas(
     @Query() query: QueryRequestParams,
@@ -32,11 +35,12 @@ export class AreasController {
     return await this.areaService.getAllAreas(query, user);
   }
 
+  @ApiParam({ name: 'id', type: ParamsDto })
   @HttpCode(HttpStatus.OK)
   @Authorized([UserRole.ADMIN, UserRole.MANAGER, UserRole.SUB_ADMIN])
   @Get(':id')
-  async getAreaById(@Param('id') id: number, @User() user: AuthUser) {
-    return await this.areaService.getAreaById(id, user);
+  async getAreaById(@Param('id') id: string, @User() user: AuthUser) {
+    return await this.areaService.getAreaById(Number(id), user);
   }
 
   @HttpCode(HttpStatus.CREATED)

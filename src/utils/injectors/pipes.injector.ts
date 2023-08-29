@@ -3,6 +3,7 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { I18nValidationPipe } from 'nestjs-i18n';
 
 export function InjectPipes(app: INestApplication) {
   app.useGlobalPipes(
@@ -11,5 +12,6 @@ export function InjectPipes(app: INestApplication) {
       whitelist: true,
       exceptionFactory: (errors) => new BadRequestException(errors),
     }),
+    new I18nValidationPipe(),
   );
 }

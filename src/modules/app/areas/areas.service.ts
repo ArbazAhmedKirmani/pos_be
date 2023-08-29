@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { AuthUser, QueryRequestParams } from 'src/utils/interfaces';
 import { catchErrorResponse } from 'src/utils/responses';
@@ -16,8 +16,8 @@ export class AreasService {
         companyId: user.company.companyId,
         ...(query?.search && { areaName: { contains: query.search } }),
       },
-      skip: query.skip || ENV_CONSTANTS.QUERY.SKIP,
-      take: query.take || ENV_CONSTANTS.QUERY.TAKE,
+      skip: query.skip || AppConfig.QUERY.SKIP,
+      take: query.take || AppConfig.QUERY.TAKE,
       orderBy: { createdAt: query.orderBy || 'desc' },
       select: {
         areaId: true,

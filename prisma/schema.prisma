@@ -197,15 +197,16 @@ model users {
 }
 
 model loginLogs {
-  loginLogsId  String   @id @default(uuid())
+  loginLogsId  String    @id @default(uuid())
   refreshToken String
   companyId    Int
-  company      company  @relation(fields: [companyId], references: [companyId])
-  createdAt    DateTime @default(now())
+  company      company   @relation(fields: [companyId], references: [companyId])
+  createdAt    DateTime  @default(now())
   expireAt     DateTime
-  logout       Boolean  @default(false)
+  deletedAt    DateTime?
+  logout       Boolean   @default(false)
   userId       Int
-  user         users    @relation(fields: [userId], references: [userId])
+  user         users     @relation(fields: [userId], references: [userId])
 }
 
 model devices {
@@ -269,6 +270,8 @@ model branch {
   areas       areas[]
   products    products[]
   order       order[]
+  tables      tables[]
+  waiters     waiters[]
 }
 
 model size {
@@ -423,6 +426,8 @@ model tables {
   deletedAt DateTime?
   companyId Int
   company   company   @relation(fields: [companyId], references: [companyId])
+  branchId  Int
+  branch    branch    @relation(fields: [branchId], references: [branchId])
   waiter    waiters[]
 }
 
@@ -439,6 +444,8 @@ model waiters {
   deletedAt  DateTime?
   companyId  Int
   company    company   @relation(fields: [companyId], references: [companyId])
+  branchId   Int
+  branch     branch    @relation(fields: [branchId], references: [branchId])
   table      tables[]
 }
 
@@ -466,8 +473,6 @@ model customer {
   phone           String?
   email           String?
   rewards         Decimal?          @db.Money
-  customer        customerName[]
-  customerAddress customerAddress[]
   isActive        Boolean?          @default(true)
   createdAt       DateTime?         @default(now())
   createdBy       BigInt?
@@ -476,6 +481,8 @@ model customer {
   deletedAt       DateTime?
   companyId       Int
   company         company           @relation(fields: [companyId], references: [companyId])
+  customer        customerName[]
+  customerAddress customerAddress[]
 }
 
 model order {

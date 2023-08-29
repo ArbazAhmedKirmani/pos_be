@@ -1,0 +1,22 @@
+{
+    "success.success": "Success",
+    "success.updated": "Updated Successfully",
+    "success.deleted": "Deleted Successfully",
+    "success.created": "Created Successfully",
+    "success.verified": "Verified Successfully",
+
+    "errors.not_found": "Resource not found",
+    "errors.forbidden": "Access not allowed",
+    "errors.fatal": "Something went wrong",
+    "errors.bad_request": "Bad request",
+    "errors.unauthorized": "Unauthorized resource",
+    "errors.invalid_values": "Invalid values for ${values}",
+    "errors.unindentified": "Unidentified error occurred",
+
+    "auth.success": "Logged In Successfully",
+    "auth.not_found":  "User you're trying to authenticate doesn't exists",
+    "auth.email_verified": "Your Email is not verified. Please verify your email and try again",
+    "auth.not_approved": "Unfortunately! Your Account is not already approved by the company. Please be patient as we are verifying your account",
+    "auth.signin_limit": "Logged In User Limit has been reached. Please try again. Or contact service administrator to upgrade your account",
+    "auth.incorrect_password": "Password is not correct"
+}

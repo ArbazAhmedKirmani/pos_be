@@ -20,7 +20,7 @@ import {
 import { LoginResponse } from './interface';
 import { RefreshJwtAuthGuard } from 'src/utils/guards/refresh-jwt.guard';
 import { AuthUser } from 'src/utils/interfaces';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,6 +29,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @SkipAuth()
+  @ApiHeader({ name: 'locale' })
   @Post('/local/login')
   async loginLocal(@Body() dto: LocalLoginDto): Promise<LoginResponse> {
     const result: LoginResponse = await this.authService.loginLocal(dto);
@@ -36,6 +37,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.CREATED)
+  @ApiHeader({ name: 'locale' })
   @SkipAuth()
   @Post('/local/signup')
   async signupLocal(@Body() dto: LocalSignupDto) {
@@ -43,6 +45,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.CREATED)
+  @ApiHeader({ name: 'locale' })
   @UseGuards(RefreshJwtAuthGuard)
   @SkipAuth()
   @Post('/refresh')
@@ -52,6 +55,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.ACCEPTED)
   @SkipAuth()
+  @ApiHeader({ name: 'locale' })
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return await this.authService.forgotPassword(dto);
@@ -59,6 +63,7 @@ export class AuthController {
 
   @SkipAuth()
   @HttpCode(HttpStatus.CREATED)
+  @ApiHeader({ name: 'locale' })
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return await this.authService.resetPassword(dto);
@@ -66,6 +71,7 @@ export class AuthController {
 
   @ApiBearerAuth('access_token')
   @HttpCode(HttpStatus.CREATED)
+  @ApiHeader({ name: 'locale' })
   @Post('change-password')
   async changePassword(@Body() dto: ChangePasswordDto, @User() user: AuthUser) {
     return await this.authService.changePassword(dto, user);

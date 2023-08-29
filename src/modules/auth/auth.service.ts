@@ -7,7 +7,7 @@ import {
 } from 'src/helpers/hashAndEncrypt.helper';
 import { LoginResponse } from './interface/loginResponse.interface';
 import { JwtService } from '@nestjs/jwt';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { AuthUser } from 'src/utils/interfaces';
 import {
   ChangePasswordDto,
@@ -19,12 +19,12 @@ import {
 import {
   BranchType,
   CompanySetttings,
-  OrderMode,
   OrderStatus,
   UserRole,
 } from '@prisma/client';
 import { QueueService } from '../queue/queue.service';
 import { Default_Company_Settings } from 'src/data/helper.data';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +32,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private queueService: QueueService,
+    private i18n: I18nService,
   ) {}
 
   async loginLocal(dto: LocalLoginDto): Promise<LoginResponse> {
@@ -72,19 +73,22 @@ export class AuthService {
 
       if (!user)
         throw new HttpException(
-          "User you're trying to authenticate doesn't exists",
+          this.i18n.t('auth.not_found'),
+          // "User you're trying to authenticate doesn't exists",
           HttpStatus.NOT_FOUND,
         );
 
       if (!user.isEmailVerified)
         throw new HttpException(
-          'Your Email is not verified. Please verify your email and try again',
+          this.i18n.t('auth.email_verified'),
+          // 'Your Email is not verified. Please verify your email and try again',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
 
       if (!user.isApproved)
         throw new HttpException(
-          'Unfortunately! Your Account is not already approved by the company. Please be patient as we are verifying your account',
+          this.i18n.t('auth.not_approved'),
+          // 'Unfortunately! Your Account is not already approved by the company. Please be patient as we are verifying your account',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
 
@@ -106,7 +110,8 @@ export class AuthService {
         ] >= login_user_count
       )
         throw new HttpException(
-          'Logged In User Limit has been reached. Please try again. Or contact service administrator to upgrade your account',
+          this.i18n.t('auth.signin_limit'),
+          // 'Logged In User Limit has been reached. Please try again. Or contact service administrator to upgrade your account',
           HttpStatus.CONFLICT,
         );
 
@@ -114,7 +119,8 @@ export class AuthService {
 
       if (!isMatched)
         throw new HttpException(
-          'Password is not correct',
+          this.i18n.translate('auth.incorrect_password', { lang: 'en' }),
+          // 'Password is not correct',
           HttpStatus.FORBIDDEN,
         );
 
@@ -142,7 +148,6 @@ export class AuthService {
       this.prisma.loginLogs.create({
         data: {
           userId: user.userId,
-          accessToken: access_token,
           refreshToken: refresh_token,
           companyId: user.company.companyId,
           expireAt: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
@@ -154,6 +159,7 @@ export class AuthService {
         access_token,
         refresh_token,
         notifications,
+        message: this.i18n.translate('auth.success'),
       };
       return result;
     } catch (error) {
@@ -193,7 +199,7 @@ export class AuthService {
         })),
       });
 
-      const hashPassword = await hashString(ENV_CONSTANTS.DEFAULT_PASSWORD);
+      const hashPassword = await hashString(AppConfig.DEFAULT_PASSWORD);
 
       const user = await this.prisma.users.create({
         data: {
@@ -207,8 +213,28 @@ export class AuthService {
         select: {
           userId: true,
           email: true,
+          password: true,
           fullname: true,
-          company: { select: { companyName: true } },
+          role: true,
+          branch: {
+            select: {
+              branchId: true,
+              branchName: true,
+              type: true,
+            },
+          },
+          isEmailVerified: true,
+          isApproved: true,
+          company: {
+            select: {
+              companyId: true,
+              businessType: true,
+              companySettings: { select: { setting: true, value: true } },
+            },
+          },
+          notificationSettings: {
+            select: { setting: true, value: true },
+          },
         },
       });
 
@@ -221,9 +247,10 @@ export class AuthService {
         });
 
       this.queueService.signupEmail({
+        userId: user.userId,
         email: dto.email,
         fullname: user.fullname,
-        companyName: user.company.companyName,
+        companyName: dto.companyName,
       });
       return "Your account with your company has been signed up successfully. We've sent you an email about further procedure.";
     } catch (error) {
@@ -269,15 +296,16 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     try {
-      const user = await this.prisma.users.findFirst({
+      const user = await this.prisma.users.findUnique({
         where: { email: dto.email },
-        select: { userId: true },
+        select: { userId: true, fullname: true, email: true },
       });
       if (!user)
         throw new HttpException('Email not found', HttpStatus.NOT_FOUND);
 
       this.queueService.forgotPasswordEmail({
-        email: dto.email,
+        email: user.email,
+        fullname: user.fullname,
         userId: user.userId,
       });
       return 'An email was sent to your account with Reset Password link';
@@ -386,7 +414,7 @@ export class AuthService {
     try {
       const access_token = this.jwtService.sign(user);
       const refresh_token = this.jwtService.sign(user, {
-        expiresIn: ENV_CONSTANTS.JWT.REFRESH_EXPIRY,
+        expiresIn: AppConfig.JWT.REFRESH_EXPIRY,
       });
       return { access_token, refresh_token };
     } catch (error) {

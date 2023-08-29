@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TableWaiterController } from './table-waiter.controller';
+import { WaiterController } from './waiter.controller';
 import { TableWaiterService } from './table-waiter.service';
+import { TableController } from './table.controller';
 
 @Module({
-  controllers: [TableWaiterController],
-  providers: [TableWaiterService]
+  controllers: [WaiterController, TableController],
+  providers: [TableWaiterService],
 })
 export class TableWaiterModule {}

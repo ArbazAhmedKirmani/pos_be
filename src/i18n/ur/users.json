@@ -1,0 +1,13 @@
+{
+    "user.registered": "صارف کامیابی سے رجسٹر ہو گیا ہے",
+    "user.notfound": "صارف نہیں ملا",
+    "user.email_already_exist": "اس ای میل کے ساتھ صارف پہلے سے موجود ہے",
+    "user.profile_picture_removed": "صارف کی پروفائل تصویر کامیابی سے ہٹا دی گئی ہے",
+    "user.device_not_found": "اس صارف کے لئے کوئی آلہ نہیں ملا",
+    "user.already_signed": "صارف نے پہلے ہی اس عقد کو منظور کر لیا ہے",
+    "user.referral_code_already_added": "پہلے سے ریفرل کوڈ کے ساتھ رجسٹر ہو چکا ہے",
+    "user.setting.touchId.not_enabled": "صارف کی ترتیب ٹچ آئی ڈی فعال نہیں ہوئی ہے",
+    "user.publickey.not_found": "صارف کی عوامی کلید نہیں ملی",
+    "user.location_not_set": "صارف کی جگہ تعین نہیں ہوئی",
+    "user.passwords_do_not_match": "پاس ورڈ مماثل نہیں ہوتے"
+}

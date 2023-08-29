@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { createDecipheriv, randomBytes, scrypt } from 'crypto';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { promisify } from 'util';
 
 const iv = randomBytes(16);
@@ -37,15 +37,11 @@ export async function compareHashString(
  */
 export async function decryptText(encryptedText) {
   const key = (await promisify(scrypt)(
-    ENV_CONSTANTS.ENCRYPTION.PASSWORD,
+    AppConfig.ENCRYPTION.PASSWORD,
     'salt',
     32,
   )) as Buffer;
-  const decipher = createDecipheriv(
-    ENV_CONSTANTS.ENCRYPTION.ALGORITHM,
-    key,
-    iv,
-  );
+  const decipher = createDecipheriv(AppConfig.ENCRYPTION.ALGORITHM, key, iv);
   const decryptedText = Buffer.concat([
     decipher.update(encryptedText),
     decipher.final(),

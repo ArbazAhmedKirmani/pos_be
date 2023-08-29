@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown | Error | HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -18,11 +18,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      message =
-        'Something went wrong on our side. Please try again after some time';
+      message = exception.message; // 'Something went wrong on our side. Please try again after some time';
     } else {
       status = 417;
-      message = 'Expectation Failed. Please try again after some time';
+      message = exception?.['message']; //'Expectation Failed. Please try again after some time';
     }
 
     response.status(status).json({

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ENV_CONSTANTS } from 'src/constants/env.constant';
+import { AppConfig } from 'src/config/app.config';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import {
   AuthUser,
@@ -13,10 +13,14 @@ import {
   UpdateFlavourDto,
   UpdateSizeDto,
 } from './dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class SizeAndFlavourService {
-  constructor(private prisma: PrismaService) {}
+  private t = null;
+  constructor(private prisma: PrismaService, private i18n: I18nService) {
+    this.t = i18n.t;
+  }
 
   // SIZES
 
@@ -27,8 +31,8 @@ export class SizeAndFlavourService {
           companyId: user.company.companyId,
           ...(query?.type && { type: query.type }),
         },
-        take: query?.take || ENV_CONSTANTS.QUERY.TAKE,
-        skip: query?.skip || ENV_CONSTANTS.QUERY.SKIP,
+        take: query?.take || AppConfig.QUERY.TAKE,
+        skip: query?.skip || AppConfig.QUERY.SKIP,
         orderBy: { sizeId: query?.orderBy },
         select: {
           sizeId: true,
@@ -41,7 +45,7 @@ export class SizeAndFlavourService {
       });
 
       if (!sizes)
-        throw new HttpException('Size not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(this.t('Size not found'), HttpStatus.NOT_FOUND);
 
       return sizes;
     } catch (error) {
@@ -154,8 +158,8 @@ export class SizeAndFlavourService {
         where: {
           companyId: user.company.companyId,
         },
-        take: query?.take || ENV_CONSTANTS.QUERY.TAKE,
-        skip: query?.skip || ENV_CONSTANTS.QUERY.SKIP,
+        take: query?.take || AppConfig.QUERY.TAKE,
+        skip: query?.skip || AppConfig.QUERY.SKIP,
         orderBy: { flevourId: query?.orderBy || 'desc' },
         select: {
           flevourId: true,
