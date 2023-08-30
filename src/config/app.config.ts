@@ -1,7 +1,3 @@
-import { ConfigService } from '@nestjs/config';
-
-const config = new ConfigService();
-
 export const AppConfig = {
   APP: {
     FRONTEND_URL: process.env.FRONTEND_URL,

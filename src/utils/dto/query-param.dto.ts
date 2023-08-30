@@ -8,18 +8,18 @@ export class QueryParamDto {
   @IsOptional()
   search?: string;
 
-  @ApiPropertyOptional({ enum: OrderbyType })
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  orderBy: OrderbyType;
+  orderBy?: any;
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  take: number;
+  take?: number;
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  skip: number;
+  skip?: number;
 }
