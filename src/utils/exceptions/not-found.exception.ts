@@ -1,8 +1,39 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
+import {
+  BadGatewayException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { i18n_constants } from 'src/constants/i18n.constant';
 
-export class NotFoundException extends HttpException {
-  constructor(i18n: I18nService) {
-    super(i18n.t('error.not_found'), HttpStatus.NOT_FOUND);
+export class NotFound extends NotFoundException {
+  constructor() {
+    super(i18n_constants.responses.error.not_found);
+  }
+}
+
+export class Forbidden extends ForbiddenException {
+  constructor() {
+    super(i18n_constants.responses.error.forbidden);
+  }
+}
+
+export class BadRequest extends BadRequestException {
+  constructor() {
+    super(i18n_constants.responses.error.bad_request);
+  }
+}
+
+export class Unauthorized extends UnauthorizedException {
+  constructor() {
+    super(i18n_constants.responses.error.unauthorized);
+  }
+}
+
+export class BadGateway extends BadGatewayException {
+  constructor() {
+    super(i18n_constants.responses.error.unindentified);
   }
 }

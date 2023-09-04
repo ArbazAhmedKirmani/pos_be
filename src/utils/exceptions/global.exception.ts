@@ -5,9 +5,12 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { I18nContext } from 'nestjs-i18n';
+import { I18nTranslate } from 'src/helpers';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  constructor(private i18n: I18nTranslate) {}
   catch(exception: unknown | Error | HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -28,7 +31,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message,
+      message: this.i18n.translate(message),
     });
   }
 }

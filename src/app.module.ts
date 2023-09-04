@@ -18,29 +18,14 @@ import { GlobalExceptionFilter } from './utils/exceptions';
 import { TableWaiterModule } from './modules/app/table-waiter/table-waiter.module';
 import { CustomerModule } from './modules/app/customer/customer.module';
 import { PaymentsModule } from './modules/app/payments/payments.module';
-import { HeaderResolver, I18nMiddleware, I18nModule } from 'nestjs-i18n';
-import { AppConfig } from './config/app.config';
-import { join } from 'path';
+import { I18nMiddleware } from 'nestjs-i18n';
 import { CustomersModule } from './modules/app/customers/customers.module';
+import { CacheModule } from './modules/cache/cache.module';
+import { I18nTranslate } from './helpers';
+import { I18nLangModule } from './modules/i18n/i18n.module';
 
 @Module({
   imports: [
-    I18nModule.forRootAsync({
-      useFactory: () => ({
-        fallbackLanguage: AppConfig.I18N.FALLBACK_LANG, //configService.getOrThrow('FALLBACK_LANGUAGE'),
-        disableMiddleware: false,
-        fallbacks: {
-          en: 'en',
-          ur: 'ur',
-        },
-        loaderOptions: {
-          path: join(__dirname, '/i18n/'),
-          watch: true,
-        },
-      }),
-      resolvers: [new HeaderResolver(['locale'])],
-      inject: [],
-    }),
     AuthModule,
     MailModule,
     PrismaModule,
@@ -56,6 +41,8 @@ import { CustomersModule } from './modules/app/customers/customers.module';
     CustomerModule,
     PaymentsModule,
     CustomersModule,
+    CacheModule,
+    I18nLangModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
@@ -63,6 +50,7 @@ import { CustomersModule } from './modules/app/customers/customers.module';
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     AppService,
     PrismaService,
+    I18nTranslate,
   ],
 })
 export class AppModule implements NestModule {

@@ -2,11 +2,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { AppConfig } from 'src/config/app.config';
-import { AuthUser } from '../interfaces';
+import { CacheService } from 'src/modules/cache/cache.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor() {
+  constructor(private cacheService: CacheService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -14,7 +14,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: AuthUser) {
-    return payload;
+  validate(payload: any) {
+    // const request = this.context.switchToHttp().getRequest();
+    // const jwtToken: string = ExtractJwt.fromAuthHeaderAsBearerToken()(req));
+
+    const user = this.cacheService.Get(`${payload}-${payload.sub}`);
+    return user;
   }
 }

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { LocalLoginDto } from './dto/locallogin.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -24,7 +30,9 @@ import {
 } from '@prisma/client';
 import { QueueService } from '../queue/queue.service';
 import { Default_Company_Settings } from 'src/data/helper.data';
-import { I18nService } from 'nestjs-i18n';
+import { I18nTranslate } from 'src/helpers';
+import { i18n_constants } from 'src/constants/i18n.constant';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +40,8 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private queueService: QueueService,
-    private i18n: I18nService,
+    private i18n: I18nTranslate,
+    private cacheService: CacheService,
   ) {}
 
   async loginLocal(dto: LocalLoginDto): Promise<LoginResponse> {
@@ -73,21 +82,21 @@ export class AuthService {
 
       if (!user)
         throw new HttpException(
-          this.i18n.t('auth.not_found'),
+          this.i18n.translate('auth.not_found'),
           // "User you're trying to authenticate doesn't exists",
           HttpStatus.NOT_FOUND,
         );
 
       if (!user.isEmailVerified)
         throw new HttpException(
-          this.i18n.t('auth.email_verified'),
+          this.i18n.translate('auth.email_verified'),
           // 'Your Email is not verified. Please verify your email and try again',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
 
       if (!user.isApproved)
         throw new HttpException(
-          this.i18n.t('auth.not_approved'),
+          this.i18n.translate('auth.not_approved'),
           // 'Unfortunately! Your Account is not already approved by the company. Please be patient as we are verifying your account',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
@@ -109,24 +118,18 @@ export class AuthService {
           CompanySetttings.NUMBER_OF_ACTIVE_USERS
         ] >= login_user_count
       )
-        throw new HttpException(
-          this.i18n.t('auth.signin_limit'),
-          // 'Logged In User Limit has been reached. Please try again. Or contact service administrator to upgrade your account',
-          HttpStatus.CONFLICT,
-        );
+        throw new ConflictException(i18n_constants.responses.auth.signin_limit);
 
       const isMatched = await compareHashString(dto.password, user.password);
 
       if (!isMatched)
-        throw new HttpException(
-          this.i18n.translate('auth.incorrect_password', { lang: 'en' }),
-          // 'Password is not correct',
-          HttpStatus.FORBIDDEN,
-        );
+        throw new NotFoundException(i18n_constants.responses.error.not_found);
 
       delete user.password;
 
       const { access_token, refresh_token } = this.generateToken(user);
+
+      this.cacheService.Set(access_token, user);
 
       const notifications = {
         new_notification: await this.prisma.notifications.count({
@@ -159,7 +162,7 @@ export class AuthService {
         access_token,
         refresh_token,
         notifications,
-        message: this.i18n.translate('auth.success'),
+        message: this.i18n.translate('response.auth.success'),
       };
       return result;
     } catch (error) {
@@ -412,10 +415,13 @@ export class AuthService {
 
   generateToken(user: AuthUser) {
     try {
-      const access_token = this.jwtService.sign(user);
-      const refresh_token = this.jwtService.sign(user, {
-        expiresIn: AppConfig.JWT.REFRESH_EXPIRY,
-      });
+      const access_token = this.jwtService.sign({ sub: user.userId });
+      const refresh_token = this.jwtService.sign(
+        { sub: user.userId },
+        {
+          expiresIn: AppConfig.JWT.REFRESH_EXPIRY,
+        },
+      );
       return { access_token, refresh_token };
     } catch (error) {
       throw new HttpException(error, HttpStatus.EXPECTATION_FAILED);
