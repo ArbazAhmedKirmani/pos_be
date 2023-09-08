@@ -19,7 +19,6 @@ import { TableWaiterModule } from './modules/app/table-waiter/table-waiter.modul
 import { CustomerModule } from './modules/app/customer/customer.module';
 import { PaymentsModule } from './modules/app/payments/payments.module';
 import { I18nMiddleware } from 'nestjs-i18n';
-import { CustomersModule } from './modules/app/customers/customers.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { I18nTranslate } from './helpers';
 import { I18nLangModule } from './modules/i18n/i18n.module';
@@ -40,7 +39,6 @@ import { I18nLangModule } from './modules/i18n/i18n.module';
     TableWaiterModule,
     CustomerModule,
     PaymentsModule,
-    CustomersModule,
     CacheModule,
     I18nLangModule,
   ],

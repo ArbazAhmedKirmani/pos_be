@@ -129,7 +129,10 @@ export class AuthService {
 
       const { access_token, refresh_token } = this.generateToken(user);
 
-      this.cacheService.Set(access_token, user);
+      this.cacheService.Set(user.userId.toString(), {
+        ...user,
+        access_token: [access_token],
+      });
 
       const notifications = {
         new_notification: await this.prisma.notifications.count({

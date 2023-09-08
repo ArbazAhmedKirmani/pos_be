@@ -468,12 +468,11 @@ model customerAddress {
 
 model customer {
   customerId      Int               @id @default(autoincrement())
-  customerName    String
   cnic            String?
-  phone           String?
+  phone           String
   email           String?
   rewards         Decimal?          @db.Money
-  isActive        Boolean?          @default(true)
+  isActive        Boolean           @default(true)
   createdAt       DateTime?         @default(now())
   createdBy       BigInt?
   updatedAt       DateTime?         @updatedAt

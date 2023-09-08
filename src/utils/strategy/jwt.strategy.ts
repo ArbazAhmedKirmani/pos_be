@@ -11,12 +11,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: AppConfig.JWT.SECRET_KEY,
+      passReqToCallback: true,
     });
   }
 
-  validate(payload: any) {
-    // const request = this.context.switchToHttp().getRequest();
-    // const jwtToken: string = ExtractJwt.fromAuthHeaderAsBearerToken()(req));
+  validate(req: Request, payload: any) {
+    console.log(req.headers);
 
     const user = this.cacheService.Get(`${payload}-${payload.sub}`);
     return user;

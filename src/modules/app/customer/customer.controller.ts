@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { AuthUser } from 'src/utils/interfaces';
 import { Authorized, User } from 'src/utils/decorators';
 import { ApiParam, ApiProperty, ApiQuery } from '@nestjs/swagger';
 import { ParamsDto, QueryParamDto } from 'src/utils/dto';
 import { UserRole } from '@prisma/client';
+import { CreateCustomerDto } from './dto';
 
 @Controller('customer')
 export class CustomerController {
@@ -47,5 +48,10 @@ export class CustomerController {
       user,
     );
     return customer;
+  }
+
+  @Post()
+  async createCustomer(@Body() dto: CreateCustomerDto, @User() user: AuthUser) {
+    const customer = await this.customerService.createCustomer(dto, user);
   }
 }
